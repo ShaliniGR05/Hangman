@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Level</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-image: linear-gradient(to right, #654ea3,#eaafc8);
+        }
+        h1 {
+            color: #f5f0f0;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 20px;
+            background-color: #3c3737;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #555;
+        }
+        .button:active {
+            background-color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select Game Level</h1>
+    <button class="button" onclick="selectLevel('easy')">Easy</button>
+    <button class="button" onclick="selectLevel('medium')">Medium</button>
+    <button class="button" onclick="selectLevel('hard')">Hard</button>
+
+    <script>
+        function selectLevel(level) {
+            // Redirect to the game page with the chosen level
+            window.location.href = `/start?level=${level}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Game with Virtual Keyboard</title>
+    <style>
+        body {
+            background-color: black;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+
+        #word-display {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .key {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            line-height: 40px;
+            text-align: center;
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+
+        .key:hover {
+            background-color: #555;
+        }
+
+        .key:active {
+            background-color: #777;
+        }
+
+        .space {
+            width: 220px;
+        }
+
+        .backspace {
+            width: 90px;
+        }
+
+        #attempts {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .transparent-container {
+    background-color: rgba(168, 21, 21, 0.119); /* 60% transparent black */
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 20px;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    display: none; /* Hidden by default */
+}
+
+
+    </style>
+</head>
+<body>
+    <h1>Hangman Game</h1>
+
+    <div id="word-display">_ _ _ _ _ _</div>
+    <div id="attempts">Attempts Left: 6</div>
+
+    <div class="keyboard">
+        <div class="key">Q</div>
+        <div class="key">W</div>
+        <div class="key">E</div>
+        <div class="key">R</div>
+        <div class="key">T</div>
+        <div class="key">Y</div>
+        <div class="key">U</div>
+        <div class="key">I</div>
+        <div class="key">O</div>
+        <div class="key">P</div>
+        <div class="key">A</div>
+        <div class="key">S</div>
+        <div class="key">D</div>
+        <div class="key">F</div>
+        <div class="key">G</div>
+        <div class="key">H</div>
+        <div class="key">J</div>
+        <div class="key">K</div>
+        <div class="key">L</div>
+        <div class="key">Z</div>
+        <div class="key">X</div>
+        <div class="key">C</div>
+        <div class="key">V</div>
+        <div class="key">B</div>
+        <div class="key">N</div>
+        <div class="key">M</div>
+        <div class="key space">Space</div>
+        <div class="key backspace">Backspace</div>
+    </div>
+    <div id="result-container" class="transparent-container"></div>
+
+    </div>
+
+    <script>
+        const wordDisplay = document.getElementById('word-display');
+        const attemptsDisplay = document.getElementById('attempts');
+        const keys = document.querySelectorAll('.key');
+
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                const letter = key.textContent;
+
+                fetch('/guess', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ letter: letter })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "win") {
+                        wordDisplay.textContent = data.word;
+                        alert("You win! The word was " + data.word);
+                        location.reload();  // Restart the game after win
+                    } else if (data.status === "lose") {
+                        alert("Game over! The word was " + data.word);
+                        location.reload();  // Restart the game after loss
+                    } else {
+                        wordDisplay.textContent = data.word_display.join(' ');
+                        attemptsDisplay.textContent = "Attempts Left: " + data.attempts_left;
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

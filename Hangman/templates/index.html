@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-image: linear-gradient(to right, #654ea3,#eaafc8);
+        }
+        #word-display {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #f5f0f0;
+        }
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .key {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            line-height: 40px;
+            text-align: center;
+            background-color: #3c3737;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+        .key:hover {
+            background-color: #555;
+        }
+        .key:active {
+            background-color: #777;
+        }
+        .key.strikethrough {
+            text-decoration: line-through;
+            background-color: #999; 
+            cursor: not-allowed; 
+        }
+        #hangman {
+            font-family: monospace;
+            white-space: pre;
+            margin-bottom: 20px;
+            color: rgb(28, 19, 19); 
+        }
+        .transparent-container {
+            background-color: rgba(0, 0, 0, 0.6); 
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 20px;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button id="restart-button" style="position: absolute; top: 10px; left: 10px; padding: 10px 20px; background-color: rgb(72, 54, 72); color: white; border: none; border-radius: 5px; cursor: pointer;">Restart</button>
+    <h1>Hangman Game</h1>
+    <div id="hangman"></div>
+    <div id="word-display">_ _ _ _ _</div>
+    <div id="attempts">Attempts Left: 6</div>
+    <div class="keyboard">
+        <div class="key">Q</div>
+        <div class="key">W</div>
+        <div class="key">E</div>
+        <div class="key">R</div>
+        <div class="key">T</div>
+        <div class="key">Y</div>
+        <div class="key">U</div>
+        <div class="key">I</div>
+        <div class="key">O</div>
+        <div class="key">P</div>
+        <div class="key">A</div>
+        <div class="key">S</div>
+        <div class="key">D</div>
+        <div class="key">F</div>
+        <div class="key">G</div>
+        <div class="key">H</div>
+        <div class="key">J</div>
+        <div class="key">K</div>
+        <div class="key">L</div>
+        <div class="key">Z</div>
+        <div class="key">X</div>
+        <div class="key">C</div>
+        <div class="key">V</div>
+        <div class="key">B</div>
+        <div class="key">N</div>
+        <div class="key">M</div>
+    </div>
+    <div id="result-container" class="transparent-container"></div>
+    <script>
+        const HANGMANPICS = [
+            `  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========\n`,
+            `  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========\n`,
+            `  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========\n`,
+            `  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========\n`,
+            `  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========\n`,
+            `  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========\n`,
+            `  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========\n`
+        ];
+        let maxGuesses = 6;
+        const hangmanDisplay = document.getElementById("hangman");
+        const wordDisplay = document.getElementById("word-display");
+        const attemptsDisplay = document.getElementById("attempts");
+
+        function updateDisplay(word_display, attempts_left) {
+            hangmanDisplay.textContent = HANGMANPICS[maxGuesses - attempts_left];
+            wordDisplay.textContent = word_display.join(" ");
+            attemptsDisplay.textContent = "Attempts Left: " + attempts_left;
+        }
+
+        function showResult(message) {
+            const resultContainer = document.getElementById("result-container");
+            resultContainer.textContent = message;
+            resultContainer.style.display = "block"; 
+        }
+
+        async function initializeGame() {
+            const response = await fetch('/reset', { method: 'POST' });
+            const data = await response.json();
+            updateDisplay(data.word_display, data.attempts_left);
+        }
+
+        async function makeGuess(letter) {
+            const response = await fetch('/guess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ letter: letter })
+            });
+            const data = await response.json();
+            if (data.status === "win") {
+                wordDisplay.textContent = data.word.split("").join(" ");
+                showResult("You win! The word was " + data.word);
+            } else if (data.status === "lose") {
+                hangmanDisplay.textContent = HANGMANPICS[6];
+                showResult("Game over! The word was " + data.word);
+            } else {
+                updateDisplay(data.word_display, data.attempts_left);
+            }
+        }
+
+        const keys = document.querySelectorAll(".key");
+        keys.forEach(key => {
+            key.addEventListener("click", () => {
+                makeGuess(key.textContent.toLowerCase());
+                key.classList.add('strikethrough');
+                key.style.pointerEvents = 'none'; 
+            });
+        });
+
+        initializeGame();
+
+        document.getElementById('restart-button').addEventListener('click', () => {
+            initializeGame();
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.classList.remove('strikethrough');
+                key.style.pointerEvents = 'auto';
+            });
+            const resultContainer = document.getElementById("result-container");
+            resultContainer.style.display = "none";
+        });
+    </script>
+</body>
+</html>
